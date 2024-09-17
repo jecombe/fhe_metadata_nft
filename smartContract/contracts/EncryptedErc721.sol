@@ -17,18 +17,23 @@ contract EncryptedErc721 is Ownable, ERC721 {
         return eKeys[msg.sender][tokenId];
     }
 
+    function randomKeys() public returns (euint64) {
+        return TFHE.randEuint64();
+    }
+
     // Fonction pour frapper un nouveau NFT
     function mint(address to, uint256 tokenId, string memory tokenURI, einput _eKey, bytes calldata inputProof) public {
         euint64 eKey = TFHE.asEuint64(_eKey, inputProof);
         eKeys[to][tokenId] = eKey;
-        _setTokenURI(tokenId, tokenURI);
+        _setTokenURI(tokenId, tokenURI, eKey);
         _mint(to, tokenId);
     }
 
     // Fonction pour définir l'URI d'un token
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI, euint64 _eKey) internal {
         // require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
         _tokenURIs[tokenId] = _tokenURI;
+        eKeys[msg.sender][tokenId] = _eKey;
     }
 
     // Fonction pour obtenir l'URI d'un token
